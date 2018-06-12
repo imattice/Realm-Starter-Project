@@ -72,6 +72,12 @@ class ToDoListController: UITableViewController {
 			ToDoItem.add(text: text)
 		}
   }
+	func toggleItem(_ item: ToDoItem) {
+		item.toggleCompleted()
+	}
+	func deleteItem(_ item: ToDoItem) {
+		item.delete()
+	}
 }
 
 // MARK: - Table View Data Source
@@ -88,11 +94,35 @@ extension ToDoListController {
     }
 
     cell.configureWith(item) { [weak self] item in
-
+			self?.toggleItem(item)
     }
 
     return cell
   }
+
+	override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+		guard let item = items?[indexPath.row] else { return }
+		let alertController = UIAlertController(title: "Edit Item", message: nil, preferredStyle: .alert)
+
+		alertController.addTextField { textField in
+			textField.placeholder = item.text
+		}
+
+		let save = UIAlertAction(title: "Save", style: .default) { alert in
+			guard let textField = alertController.textFields![0] as? UITextField,
+				let text = textField.text,
+				text.count > 0
+			else {return}
+
+			item.update(text)
+		}
+		let cancel = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+
+		alertController.addAction(save)
+		alertController.addAction(cancel)
+
+		present(alertController, animated: true)
+	}
 }
 
 // MARK: - Table View Delegate
@@ -104,7 +134,9 @@ extension ToDoListController {
 
   override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
     guard let item = items?[indexPath.row],
-          editingStyle == .delete else { return }
+          editingStyle == .delete,
+					item.isCompleted else { return }
+		deleteItem(item)
 
   }
 }

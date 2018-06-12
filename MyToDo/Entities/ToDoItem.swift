@@ -64,4 +64,28 @@ extension ToDoItem {
 		}
 		return item
 	}
+
+	func toggleCompleted() {
+		//each object that is persisted by Realm has a realm property, which allows you to access the realm where the object is persisted
+		guard let realm = realm else { return }
+		try! realm.write {
+			isCompleted = !isCompleted
+		}
+	}
+
+	func delete() {
+		guard let realm = realm else { return }
+		// you can only modify a persisted object from within a write transaction; otherwise, you will get an exception
+		try! realm.write {
+			realm.delete(self)
+		}
+	}
+
+	func update(_ text: String) {
+		guard let realm = realm else {return}
+		try! realm.write {
+			self.text = text
+			realm.add(self, update: true)
+		}
+	}
 }
